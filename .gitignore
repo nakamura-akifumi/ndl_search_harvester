@@ -87,3 +87,6 @@ ENV/
 
 # Rope project settings
 .ropeproject
+/.idea/
+ndl_search_harvester.iml
+/.gitignore
