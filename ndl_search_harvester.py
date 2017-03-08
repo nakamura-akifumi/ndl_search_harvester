@@ -11,7 +11,8 @@ from lxml import etree
 # http://ailaby.com/ndl_search/
 # http://ymotongpoo.hatenablog.com/entry/20110729/1311900747
 
-def fetchFromNDL():
+
+def fetch_from_ndl():
     base_url = "http://iss.ndl.go.jp/api/oaipmh"
 
     params = {}
@@ -53,7 +54,7 @@ def fetchFromNDL():
         resumption_tokens = root.xpath('//ns1:ListRecords/ns2:resumptionToken',
                                        namespaces={'ns1': 'http://www.openarchives.org/OAI/2.0/',
                                                    'ns2': 'http://www.openarchives.org/OAI/2.0/'})
-        if (len(resumption_tokens) == 1):
+        if len(resumption_tokens) == 1:
             x = resumption_tokens[0]
             params['resumptionToken'] = x.text
 
@@ -69,4 +70,4 @@ def fetchFromNDL():
 
 
 if __name__ == '__main__':
-    fetchFromNDL()
+    fetch_from_ndl()
