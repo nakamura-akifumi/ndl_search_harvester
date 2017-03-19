@@ -3,6 +3,7 @@ import requests
 import os.path
 from lxml import etree
 from datetime import *
+import time
 
 # lxml package for windows (http://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml)
 # get lxml‑3.7.3‑cp36‑cp36m‑win_amd64.whl
@@ -11,7 +12,7 @@ from datetime import *
 # references
 # http://ailaby.com/ndl_search/
 
-def fetch_from_ndl(date_from, date_until):
+def fetch_from_ndl(date_from, date_until, **kwargs):
     base_url = "http://iss.ndl.go.jp/api/oaipmh"
 
     params = {}
@@ -26,6 +27,11 @@ def fetch_from_ndl(date_from, date_until):
 
     params['from'] = date_from.strftime('%Y-%m-%d')
     params['until'] = date_until.strftime('%Y-%m-%d')
+
+    # options
+    filestore_if_record_size_zero = False
+    if "filestore_record_zero" in kwargs:
+        filestore_if_record_size_zero = kwargs["filestore_record_zero"]
 
     print(f"start request {base_url}")
 
@@ -46,12 +52,13 @@ def fetch_from_ndl(date_from, date_until):
         total_record_cnt = total_record_cnt + len(records)
 
         # store
-        folder = "c:\\tmp"
-        filename = f"ndl_oaipmh_{params['from']}-{index}.xml"
-        writepath = os.path.join(folder, filename)
+        if filestore_if_record_size_zero or len(records) > 0:
+            folder = "c:\\tmp"
+            filename = f"ndl_oaipmh_{params['from']}-{index}.xml"
+            writepath = os.path.join(folder, filename)
 
-        with open(writepath, 'wb') as f:
-            f.write(r.content)
+            with open(writepath, 'wb') as f:
+                f.write(r.content)
 
         print(f"index=#{index} records={len(records)} / parse resumptionToken")
 
@@ -69,13 +76,31 @@ def fetch_from_ndl(date_from, date_until):
         index = index + 1
 
     ##################
-    print("===")
-    print(f"total read = {index}")
-    print(f"total record count = {total_record_cnt}")
+    # print("===")
+    # print(f"total read = {index}")
+    # print(f"total record count = {total_record_cnt}")
 
+    return total_record_cnt
 
 if __name__ == '__main__':
-    # tdatetime_from = datetime.now()
-    tdatetime_from = datetime(2013, 7, 14)
-    tdatetime_until = tdatetime_from + timedelta(days=1)
-    fetch_from_ndl(tdatetime_from, tdatetime_until)
+
+    total_record = 0
+    interval = timedelta(days=7)
+    get_tdatetime = datetime(2011, 1, 1)
+    get_tdatetime_until = datetime(2017, 3, 1)
+
+    while True:
+        tdatetime_from = get_tdatetime
+        tdatetime_until = tdatetime_from + interval
+
+        print(tdatetime_from)
+
+        record_size = fetch_from_ndl(tdatetime_from, tdatetime_until, filestore_record_zero=False)
+        print(f'datefrom={tdatetime_from} records={record_size}')
+        total_record += record_size
+
+        get_tdatetime += interval
+        if get_tdatetime_until < get_tdatetime:
+            break
+
+        time.sleep(3)
