@@ -4,6 +4,7 @@ import os.path
 from lxml import etree
 from datetime import *
 import time
+import sys
 
 # lxml package for windows (http://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml)
 # get lxml‑3.7.3‑cp36‑cp36m‑win_amd64.whl
@@ -33,6 +34,12 @@ def fetch_from_ndl(date_from, date_until, **kwargs):
     if "filestore_record_zero" in kwargs:
         filestore_if_record_size_zero = kwargs["filestore_record_zero"]
 
+    folder = "/tmp"
+    if sys.platform == "win32":
+        folder = "c:\\tmp"
+    if "filestore_folder" in kwargs:
+        folder = kwargs["folder"]
+
     print(f"start request {base_url}")
 
     index = 0
@@ -53,7 +60,6 @@ def fetch_from_ndl(date_from, date_until, **kwargs):
 
         # store
         if filestore_if_record_size_zero or len(records) > 0:
-            folder = "c:\\tmp"
             filename = f"ndl_oaipmh_{params['from']}-{index}.xml"
             writepath = os.path.join(folder, filename)
 
@@ -86,8 +92,10 @@ if __name__ == '__main__':
 
     total_record = 0
     interval = timedelta(days=7)
-    get_tdatetime = datetime(2011, 1, 1)
+    get_tdatetime = datetime(2013, 6, 1)
     get_tdatetime_until = datetime(2017, 3, 1)
+
+    print(f'@start')
 
     while True:
         tdatetime_from = get_tdatetime
@@ -95,7 +103,7 @@ if __name__ == '__main__':
 
         print(tdatetime_from)
 
-        record_size = fetch_from_ndl(tdatetime_from, tdatetime_until, filestore_record_zero=False)
+        record_size = fetch_from_ndl(tdatetime_from, tdatetime_until, filestore_record_zero=False, folder='/home/nakamura/data/ndl_oai_harvester')
         print(f'datefrom={tdatetime_from} records={record_size}')
         total_record += record_size
 
@@ -104,3 +112,6 @@ if __name__ == '__main__':
             break
 
         time.sleep(3)
+
+    # finish
+    print(f'@finish records={total_record}')
