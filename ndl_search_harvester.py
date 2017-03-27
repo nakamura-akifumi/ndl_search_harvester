@@ -9,6 +9,9 @@ import time
 # get lxml‑3.7.3‑cp36‑cp36m‑win_amd64.whl
 # pip install lxml-3.7.3-cp36-cp36m-win_amd64.whl
 
+# references
+# http://ailaby.com/ndl_search/
+
 def fetch_from_ndl(date_from, date_until, **kwargs):
     base_url = "http://iss.ndl.go.jp/api/oaipmh"
 
@@ -20,7 +23,7 @@ def fetch_from_ndl(date_from, date_until, **kwargs):
     if date_from is None:
         date_from = datetime.today()
     if date_until is None:
-        date_until = datetime.today() + timedelta(days=1)
+        date_until = datetime.today() + 1
 
     params['from'] = date_from.strftime('%Y-%m-%d')
     params['until'] = date_until.strftime('%Y-%m-%d')
@@ -73,15 +76,17 @@ def fetch_from_ndl(date_from, date_until, **kwargs):
         index = index + 1
 
     ##################
+    # print("===")
+    # print(f"total read = {index}")
+    # print(f"total record count = {total_record_cnt}")
+
     return total_record_cnt
 
 if __name__ == '__main__':
 
-    print(f"@start time={datetime.now().strftime('%Y/%m/%d %H:%M:%S')}")
-
     total_record = 0
     interval = timedelta(days=7)
-    get_tdatetime = datetime(2013, 1, 1)
+    get_tdatetime = datetime(2011, 1, 1)
     get_tdatetime_until = datetime(2017, 3, 1)
 
     while True:
@@ -99,7 +104,3 @@ if __name__ == '__main__':
             break
 
         time.sleep(3)
-
-    ###
-    print(f"@finish time={datetime.now().strftime('%Y/%m/%d %H:%M:%S')}")
-    print(f"total records={total_record}")
