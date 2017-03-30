@@ -59,9 +59,10 @@ def xml2esjson(importpath, exportpath):
             xl = r.findall('.//dc:title', namespaces=ns)
             xla = []
             for x in xl:
-                xla.append({"value": r.find('.//rdf:Description/rdf:value', namespaces=ns).text,
-                            "transcription": r.find('.//rdf:Description/dcndl:transcription', namespaces=ns).text
-                            })
+                if r.find('.//rdf:Description/rdf:value', namespaces=ns):
+                    xla.append({"value": r.find('.//rdf:Description/rdf:value', namespaces=ns).text,
+                                "transcription": r.find('.//rdf:Description/dcndl:transcription', namespaces=ns).text
+                                })
             j['dc_titles'] = xla
 
             # 2-42
@@ -71,14 +72,16 @@ def xml2esjson(importpath, exportpath):
             xl = r.findall('.//dc:creator', namespaces=ns)
             j['creators'] = [x.text for x in xl]
 
+            # 2-51
+
+
             # 2-81-n/2-82-n
-            # 1st:2-81-n
             xla = []
+            # 1st:2-81-n
             xl = r.findall(".//dcterms:subject", namespaces=ns)
             for x in xl:
                 for k, v in x.attrib.items():
                     if k == "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}resource":
-                        # print(f"match {v}")
                         o = urlparse(v)
                         m = re.match(r"/class/(\w+)/(\w+)", o.path)
                         if m:
@@ -88,8 +91,51 @@ def xml2esjson(importpath, exportpath):
                             # print(type(x.attrib))
                         #                m = re.search("'(.*)': '(.*)'", x.attrib)
 
-            j['classes'] = xla
             # 2nd:2-82-n
+            xl = r.findall(".//dc:subject", namespaces=ns)
+            for x in xl:
+                for k, v in x.attrib.items():
+                    if v in {"http://ndl.go.jp/dcndl/terms/NDC",
+                             "http://ndl.go.jp/dcndl/terms/NDC8",
+                             "http://purl.org/dc/terms/LCC",
+                             "http://purl.org/dc/terms/UDC"}:
+                        o = urlparse(v)
+                        m = re.match(r"/(\w+)/terms/(\w+)", o.path)
+                        xla.append({m.group(2): x.text})
+
+            j['classes'] = xla
+
+            # 2-83
+            xl = r.findall(".//dcterms:language[@rdf:datatype='http://purl.org/dc/terms/ISO639-2']",
+                           namespaces=ns)
+            j['languages'] = [x.text for x in xl]
+
+            # 2-84
+            xl = r.findall(".//dcndl:originalLanguage[@rdf:datatype='http://purl.org/dc/terms/ISO639-2']",
+                           namespaces=ns)
+            j['original_languages'] = [x.text for x in xl]
+
+            # 2-85
+            xl = r.findall(".//dcndl:price", namespaces=ns)
+            j['price'] = [x.text for x in xl]
+
+            # 2-86
+            xl = r.findall(".//dcterms:extent", namespaces=ns)
+            j['extent'] = [x.text for x in xl]
+
+            # 2-89
+            xla = []
+            xl = r.findall(".//dcndl:materialType", namespaces=ns)
+            for x in xl:
+                for k, v in x.attrib.items():
+                    print("@@@")
+                    print(k, v)
+                    o = urlparse(v)
+                    m = re.match(r"/ndltype/(\w+)", o.path)
+                    if m:
+                        xla.append(m.group(1))
+
+            j['matrialtype'] = xla
 
             # print(j)
             json_list.append(j)
@@ -114,7 +160,9 @@ def xml2esjson(importpath, exportpath):
 if __name__ == '__main__':
     print(f"@start time={datetime.now().strftime('%Y/%m/%d %H:%M:%S')}")
 
-    importpath = "D:\\data\\xml\\ndl_oaipmh_2013-06-22-4789.xml"
+    # importpath = "D:\\data\\xml\\ndl_oaipmh_2013-06-22-4789.xml"
+    importpath = "D:\\data\\xml\\ndl_oaipmh_2013-06-22-1043.xml"
+
     exportpath = "D:\\data\\json"
 
     xml2esjson(importpath, exportpath)
