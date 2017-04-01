@@ -73,7 +73,27 @@ def xml2esjson(importpath, exportpath):
             j['creators'] = [x.text for x in xl]
 
             # 2-51
+            xla = []
+            xl = r.findall('.//dcterms:publisher', namespaces=ns)
+            for x in xl:
+                jj = {}
+                jj['name'] = x.find('.//foaf:Agent/foaf:name', namespaces=ns).text
 
+                t = x.find('.//foaf:Agent/dcndl:transcription', namespaces=ns)
+                if t is not None:
+                    jj['transcription'] = t.text
+
+                t = x.find('.//foaf:Agent/dcterms:description', namespaces=ns)
+                if t is not None:
+                    jj['description'] = t.text
+
+                t = x.find('.//foaf:Agent/dcndl:location', namespaces=ns)
+                if t is not None:
+                    jj['location'] = t.text
+
+                xla.append(jj)
+
+            j['publishers'] = xla
 
             # 2-81-n/2-82-n
             xla = []
@@ -88,8 +108,6 @@ def xml2esjson(importpath, exportpath):
                             # print(m.group(1), m.group(2))
                             xla.append({m.group(1): m.group(2)})
 
-                            # print(type(x.attrib))
-                        #                m = re.search("'(.*)': '(.*)'", x.attrib)
 
             # 2nd:2-82-n
             xl = r.findall(".//dc:subject", namespaces=ns)
@@ -128,8 +146,6 @@ def xml2esjson(importpath, exportpath):
             xl = r.findall(".//dcndl:materialType", namespaces=ns)
             for x in xl:
                 for k, v in x.attrib.items():
-                    print("@@@")
-                    print(k, v)
                     o = urlparse(v)
                     m = re.match(r"/ndltype/(\w+)", o.path)
                     if m:
