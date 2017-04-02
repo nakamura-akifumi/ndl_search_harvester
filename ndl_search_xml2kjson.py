@@ -2,12 +2,12 @@ import os.path
 from lxml import etree
 from datetime import *
 import time
-from datetime import datetime
 from elasticsearch import Elasticsearch
 import glob
 import json
 import re
 from urllib.parse import urlparse
+import platform
 
 def json2es():
     es = Elasticsearch()
@@ -69,8 +69,9 @@ def xml2esjson(importpath, exportpath):
                 v = x.find('.//rdf:Description/rdf:value', namespaces=ns)
                 if v is not None:
                     transcription = ""
-                    if r.find('.//rdf:Description/dcndl:transcription', namespaces=ns) is not None:
-                        transcription = x.find('.//rdf:Description/dcndl:transcription', namespaces=ns).text
+                    t = r.find('.//rdf:Description/dcndl:transcription', namespaces=ns)
+                    if t is not None:
+                        transcription = t.text
 
                     xla.append({"value": v.text,
                                 "transcription": transcription
@@ -138,8 +139,6 @@ def xml2esjson(importpath, exportpath):
                     jj['desc_desc'] = x.find('.//rdf:Description/dcterms:description', namespaces=ns).text
                 if x.findall('.//rdf:Description/dc:creator', namespaces=ns):
                     jj['desc_creator'] = [xx.text for xx in x.findall('.//rdf:Description/dc:creator', namespaces=ns)]
-
-                print(jj)
 
                 xla.append(jj)
 
@@ -226,10 +225,14 @@ def xml2esjson(importpath, exportpath):
 if __name__ == '__main__':
     print(f"@start time={datetime.now().strftime('%Y/%m/%d %H:%M:%S')}")
 
-    # importpath = "D:\\data\\xml\\ndl_oaipmh_2013-06-22-4789.xml"
-    importpath = "D:\\data\\xml\\ndl_oaipmh_2013-06-22-4789.xml"
+    if platform.system() == "Windows":
+        # importpath = "D:\\data\\xml\\ndl_oaipmh_2013-06-22-4789.xml"
+        importpath = "D:\\data\\xml\\ndl_oaipmh_2013-06-22-4789.xml"
+        exportpath = "D:\\data\\json"
+    else:
+        importpath = "/home/nakamura/data/xml/*.xml"
+        exportpath = "/home/nakamura/data/json"
 
-    exportpath = "D:\\data\\json"
 
     xml2esjson(importpath, exportpath)
 
