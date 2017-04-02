@@ -42,6 +42,13 @@ def xml2esjson(importpath, exportpath):
         for r in records:
             j = {}
 
+            # 1-3
+            x = r.find(".//dcndl:BibAdminResource",
+                       namespaces=ns)
+            for k, v in x.attrib.items():
+                j['ndl_resource_about'] = v
+                break
+
             # 2-3-1
             x = r.find(".//dcterms:identifier[@rdf:datatype='http://ndl.go.jp/dcndl/terms/JPNO']",
                        namespaces=ns)
@@ -59,10 +66,16 @@ def xml2esjson(importpath, exportpath):
             xl = r.findall('.//dc:title', namespaces=ns)
             xla = []
             for x in xl:
-                if r.find('.//rdf:Description/rdf:value', namespaces=ns):
-                    xla.append({"value": r.find('.//rdf:Description/rdf:value', namespaces=ns).text,
-                                "transcription": r.find('.//rdf:Description/dcndl:transcription', namespaces=ns).text
+                v = x.find('.//rdf:Description/rdf:value', namespaces=ns)
+                if v is not None:
+                    transcription = ""
+                    if r.find('.//rdf:Description/dcndl:transcription', namespaces=ns) is not None:
+                        transcription = x.find('.//rdf:Description/dcndl:transcription', namespaces=ns).text
+
+                    xla.append({"value": v.text,
+                                "transcription": transcription
                                 })
+
             j['dc_titles'] = xla
 
             # 2-42
@@ -94,6 +107,43 @@ def xml2esjson(importpath, exportpath):
                 xla.append(jj)
 
             j['publishers'] = xla
+
+            # 2-59
+            xla = []
+            xl = r.findall(".//dcterms:date", namespaces=ns)
+            for x in xl:
+                xla.append(x.text)
+
+            j['pubdate_label'] = xla
+
+            # 2-60
+            xla = []
+            xl = r.findall(".//dcterms:issued", namespaces=ns)
+            for x in xl:
+                xla.append(x.text)
+
+            j['issued'] = xla
+
+            # 2-59 + 2-60
+
+            # 2-69
+            xla = []
+            xl = r.findall(".//dcndl:partInformation", namespaces=ns)
+            for x in xl:
+                jj = {}
+                jj['desc_title'] = x.find('.//rdf:Description/dcterms:title', namespaces=ns).text
+                if x.find('.//rdf:Description/dcndl:transcription', namespaces=ns):
+                    jj['desc_transcription'] = x.find('.//rdf:Description/dcndl:transcription', namespaces=ns).text
+                if x.find('.//rdf:Description/dcterms:description', namespaces=ns):
+                    jj['desc_desc'] = x.find('.//rdf:Description/dcterms:description', namespaces=ns).text
+                if x.findall('.//rdf:Description/dc:creator', namespaces=ns):
+                    jj['desc_creator'] = [xx.text for xx in x.findall('.//rdf:Description/dc:creator', namespaces=ns)]
+
+                print(jj)
+
+                xla.append(jj)
+
+            j['part_infos'] = xla
 
             # 2-81-n/2-82-n
             xla = []
@@ -177,7 +227,7 @@ if __name__ == '__main__':
     print(f"@start time={datetime.now().strftime('%Y/%m/%d %H:%M:%S')}")
 
     # importpath = "D:\\data\\xml\\ndl_oaipmh_2013-06-22-4789.xml"
-    importpath = "D:\\data\\xml\\ndl_oaipmh_2013-06-22-1043.xml"
+    importpath = "D:\\data\\xml\\ndl_oaipmh_2013-06-22-4789.xml"
 
     exportpath = "D:\\data\\json"
 
