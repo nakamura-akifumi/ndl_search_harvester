@@ -8,6 +8,7 @@ import json
 import re
 from urllib.parse import urlparse
 import platform
+import kassis_config
 
 def json2es():
     es = Elasticsearch()
@@ -231,7 +232,7 @@ def xml2esjson(importpath, exportpath):
 
         print(f"writepath={writepath}")
 
-        json_text = json.dumps(json_list, sort_keys=True, ensure_ascii=False, indent=2)
+        json_text = json.dumps(json_list, ensure_ascii=False, indent=2)
 
         with open(writepath, 'w', encoding='utf8') as f:
             f.write(json_text)
@@ -243,14 +244,10 @@ def xml2esjson(importpath, exportpath):
 if __name__ == '__main__':
     print(f"@start time={datetime.now().strftime('%Y/%m/%d %H:%M:%S')}")
 
-    if platform.system() == "Windows":
-        # importpath = "D:\\data\\xml\\ndl_oaipmh_2013-06-22-4789.xml"
-        importpath = "D:\\data\\xml\\ndl_oaipmh_2014-03-22-26.xml"
-        exportpath = "D:\\data\\json"
-    else:
-        importpath = "/home/nakamura/data/xml/*.xml"
-        exportpath = "/home/nakamura/data/json"
+    config = kassis_config.get()
 
+    importpath = config['xml2kson']['xml_import']
+    exportpath = config['xml2kson']['es_export']
 
     xml2esjson(importpath, exportpath)
 
