@@ -7,15 +7,13 @@ from win32com.shell import shell, shellcon
 def get():
 
     folders = []
-    ext_name = ""
+    ext_name = ".ini"
 
     folders.append(os.path.dirname(os.path.abspath(__file__)))
     folders.append(os.path.expanduser("~"))
     if platform.system() == "Windows":
-        ext_name = ".ini"
         folders.append(shell.SHGetFolderPath(0, shellcon.CSIDL_LOCAL_APPDATA, None, 0))
     else:
-        ext_name = ".conf"
         folders.append("/etc")
 
     ini_fileepath = None
