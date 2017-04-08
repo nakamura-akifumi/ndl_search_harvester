@@ -219,6 +219,9 @@ def xml2esjson(importpath, exportpath):
 
                 j['matrialtype'] = xla
 
+                # misc.
+                j['id'] = j['jpno']
+
                 # print(j)
                 json_list.append(j)
             except AttributeError as err:
@@ -232,10 +235,21 @@ def xml2esjson(importpath, exportpath):
 
         print(f"writepath={writepath}")
 
-        json_text = json.dumps(json_list, ensure_ascii=False, indent=2)
+        # output_type = "json"
+        output_type = "es"
+        if output_type == "json":
+            json_text = json.dumps(json_list, ensure_ascii=False, indent=2)
+            with open(writepath, 'w', encoding='utf8') as f:
+                f.write(json_text)
+        else:
+            with open(writepath, 'w', encoding='utf8') as f:
+                for j in json_list:
+                    f.write('{ "create":  { "_index": "kassis", "_type": "manifestations", "_id":' + j['id'] + '}}\n')
 
-        with open(writepath, 'w', encoding='utf8') as f:
-            f.write(json_text)
+                    json_text = json.dumps(j, ensure_ascii=False)
+                    json_text += "\n"
+                    f.write(json_text)
+
 
     # ===
     print(f"total_record={total_record}")
