@@ -2,7 +2,10 @@ import os.path
 import platform
 import configparser
 import sys
-from win32com.shell import shell, shellcon
+try:
+    from win32com.shell import shell, shellcon
+except ModuleNotFoundError:
+    pass
 
 def get():
 
@@ -25,7 +28,7 @@ def get():
             break
 
     if ini_fileepath is None:
-        sys.stderr.write("INIFILE/CONFFILEが見つかりません\n")
+        sys.stderr.write("kassis.iniが見つかりません\n")
         sys.exit(2)
 
     config = configparser.ConfigParser()
