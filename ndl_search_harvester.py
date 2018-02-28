@@ -4,6 +4,7 @@ import os.path
 from lxml import etree
 from datetime import *
 import time
+import kassis_config
 
 # lxml package for windows (http://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml)
 # get lxml‑3.7.3‑cp36‑cp36m‑win_amd64.whl
@@ -12,7 +13,7 @@ import time
 # references
 # http://ailaby.com/ndl_search/
 
-def fetch_from_ndl(date_from, date_until, **kwargs):
+def fetch_from_ndl(date_from, date_until, store_folder, **kwargs):
     base_url = "http://iss.ndl.go.jp/api/oaipmh"
 
     params = {}
@@ -53,9 +54,8 @@ def fetch_from_ndl(date_from, date_until, **kwargs):
 
         # store
         if filestore_if_record_size_zero or len(records) > 0:
-            folder = "c:\\tmp"
             filename = f"ndl_oaipmh_{params['from']}-{index}.xml"
-            writepath = os.path.join(folder, filename)
+            writepath = os.path.join(store_folder, filename)
 
             with open(writepath, 'wb') as f:
                 f.write(r.content)
@@ -89,13 +89,16 @@ if __name__ == '__main__':
     get_tdatetime = datetime(2011, 1, 1)
     get_tdatetime_until = datetime(2017, 3, 1)
 
+    config = kassis_config.get()
+    storepath = config['harvester']['xml_store']
+
     while True:
         tdatetime_from = get_tdatetime
         tdatetime_until = tdatetime_from + interval
 
         print(tdatetime_from)
 
-        record_size = fetch_from_ndl(tdatetime_from, tdatetime_until, filestore_record_zero=False)
+        record_size = fetch_from_ndl(tdatetime_from, tdatetime_until, storepath, filestore_record_zero=False)
         print(f'datefrom={tdatetime_from} records={record_size}')
         total_record += record_size
 
@@ -103,4 +106,4 @@ if __name__ == '__main__':
         if get_tdatetime_until < get_tdatetime:
             break
 
-        time.sleep(3)
+        time.sleep(2)
