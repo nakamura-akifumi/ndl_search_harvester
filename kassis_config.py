@@ -1,4 +1,5 @@
 import os.path
+import re
 import platform
 import configparser
 import sys
@@ -37,5 +38,12 @@ def get():
     else:
         sys.stderr.write(ini_fileepath + " が見つかりません\n")
         sys.exit(2)
+
+    for s in config.sections():
+        for i in config[s]:
+
+            for m in re.finditer(r"(\$)(\w+)", config[s][i]):
+                if os.environ[m.group(2)] is not None:
+                    config[s][i] = re.sub(r"(\$)(\w+)", os.environ[m.group(2)], config[s][i])
 
     return config
