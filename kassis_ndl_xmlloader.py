@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 
 def xml2json(importfilename):
     total_record = 0
-    print(f"importpath={importfilename}")
+    #print(f"importpath={importfilename}")
 
     ns = {'ns': 'http://www.openarchives.org/OAI/2.0/',
           'rdf': "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
@@ -20,7 +20,7 @@ def xml2json(importfilename):
     tree = etree.parse(importfilename)
     root = tree.getroot()
     records = root.xpath('//ns:record', namespaces=ns)
-    print(f"readfile name={importfilename} size={len(records)}")
+    #print(f"readfile name={importfilename} size={len(records)}")
     total_record += len(records)
 
     json_list = []
@@ -209,7 +209,6 @@ def xml2json(importfilename):
 
             # print(j)
             json_list.append(j)
-            #print("json append")
         except AttributeError as err:
             print(f"Attribute error record_line={record_line} :{format(err)}")
 

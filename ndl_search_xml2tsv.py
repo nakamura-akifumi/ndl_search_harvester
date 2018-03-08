@@ -8,6 +8,31 @@ import os
 def pickup(item):
     row = []
     row.append(item['dcterms_title'])
+
+    if item['dc_titles'] and len(item['dc_titles']) > 0:
+        row.append(item['dc_titles'][0].get('value', ''))
+        row.append(item['dc_titles'][0].get('transcription', ''))
+    else:
+        row.append('')
+        row.append('')
+
+    if item['isbn'] and len(item['isbn']) > 0:
+        row.append(item['isbn'][0])
+    else:
+        row.append('')
+
+    if item['publishers'] and len(item['publishers']) > 0:
+        row.append(item['publishers'][0].get('name', ''))
+        row.append(item['publishers'][0].get('transcription', ''))
+    else:
+        row.append('')
+        row.append('')
+
+    if item['creators'] and len(item['creators']) > 0:
+        row.append(item['creators'][0])
+    else:
+        row.append('')
+
     return row
 
 def xml2csv(importpath, exportpath):
@@ -22,17 +47,16 @@ def xml2csv(importpath, exportpath):
         else:
             fn = os.path.basename(filename)
             name, ext = os.path.splitext(fn)
-            jsonfilename = f"{name}.csv"
+            jsonfilename = f"{name}.tsv"
             writepath = os.path.join(exportpath, jsonfilename)
 
             with open(writepath, 'w') as csvfile:
-                writer = csv.writer(csvfile, lineterminator='\n')
+                writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL, delimiter="\t", lineterminator='\n')
                 # header
-                writer.writerow(['タイトル'])
+                writer.writerow(['主タイトル','タイトル','タイトル読み','ISBN','出版者','出版者ヨミ','著者'])
 
                 for i in jsonlist:
                     writer.writerow(pickup(i))
-
 
     # end of loop
 
